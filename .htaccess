@@ -1,0 +1,14 @@
+RewriteEngine On
+RewriteRule ^student$ student.php [NC,L]
+RewriteRule ^student/$ student.php [NC,L]
+
+RewriteRule ^admin$ admin.php [NC,L]
+RewriteRule ^admin/$ admin.php [NC,L]
+
+RewriteRule ^teacher$ teacher.php [NC,L]
+RewriteRule ^teacher/$ teacher.php [NC,L]
+
+<Files "\.txt$">
+    Order Allow,Deny
+    Deny from all
+</Files>
