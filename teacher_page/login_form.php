@@ -98,7 +98,7 @@
     <div class="form-container">
         <form method="post">
             <label for="employeeNumber">Employee Number</label>
-            <input type="number" name="employeeNumber" id="employeeNumber" maxlength="4" value="<?php echo $empno ?>">
+            <input type="number" name="employeeNumber" id="employeeNumber" max="9999" value="<?php echo $empno ?>">
             <label for="password">Password</label>
             <input type="password" name="password" id="password" minlength="6">
             <button type="submit" name="emp_submit">Login</button>
