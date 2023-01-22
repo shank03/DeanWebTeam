@@ -97,6 +97,39 @@ function display_courses_t($teacher)
     }
 }
 
+function set_course_sem($course_code, $sem, $teacher)
+{
+    if ($teacher == null) {
+        logout_teacher();
+        echo "<script>alert(\"ERROR: Teacher is NULL\"); window.location.href='student'</script>";
+        return;
+    }
+
+    $db = new PDO('mysql:host=localhost;dbname=dean', 'root', '');
+    $q_course = $db->prepare('SELECT * FROM course WHERE course_code = :cc AND semester = :sem');
+    $q_course->bindParam(':cc', $course_code);
+    $q_course->bindParam(':sem', $sem);
+    $q_course->execute();
+
+    if ($q_course->rowCount() <= 0) {
+        return "Course {$course_code} doesn't exists in {$sem} semester";
+    }
+    $course = $q_course->fetch(PDO::FETCH_ASSOC);
+
+    $q_allot = $db->prepare('INSERT INTO professor_allotment (employee_id, course_code, semester, d_year, branch)
+                            VALUES (:emp, :cc, :sem, :dy, :br)');
+    $q_allot->bindParam(':cc', $course_code);
+    $q_allot->bindParam(':sem', $sem);
+    $q_allot->bindParam(':emp', $teacher['employee_id']);
+    $q_allot->bindParam(':dy', date('Y'));
+    $q_allot->bindParam(':br', $course['branch']);
+    if ($q_allot->execute()) {
+        return "";
+    } else {
+        return "Error setting course: " . $q_allot->errorInfo()[2];
+    }
+}
+
 function hash_password($password)
 {
     $r_salt = file_get_contents('salt.txt');

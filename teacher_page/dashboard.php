@@ -97,6 +97,73 @@
             background-color: #f5f5f5;
             color: #3f51b5;
         }
+
+        .form-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 56px 0 30px 0;
+        }
+
+        /* Minimalist design for form elements */
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        label,
+        button,
+        h1 {
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        label,
+        input,
+        button {
+            margin: 10px 0;
+            font-size: 16px;
+        }
+
+        input,
+        button {
+            padding: 12px;
+            border: none;
+            border-radius: 4px;
+            background-color: #424242;
+            color: #f5f5f5;
+        }
+
+        /* Increase border width and change color on focus */
+        input:focus,
+        button:focus {
+            border: 2px solid #3f51b5;
+            outline: none;
+        }
+
+        /* Rounded corners for form container */
+        .form-container {
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        /* Rounded corners for inputs and button */
+        input,
+        button {
+            border-radius: 20px;
+        }
+
+        /* Colorful button */
+        button {
+            background-color: #3f51b5;
+            color: #f5f5f5;
+        }
+
+        /* Change button color on hover */
+        button:hover {
+            background-color: #5f5f5f;
+        }
     </style>
 </head>
 
@@ -118,10 +185,10 @@
             <?php
             $entry_stat = get_entry_status();
             if ($entry_stat[0] == true) {
-                echo "<button class=\"nav_btn\">Enter the courses of current semester</button>";
+                echo "<button type=\"submit\" name=\"emp_set_course_form\" class=\"nav_btn\">Enter the courses of current semester</button>";
             }
             if ($entry_stat[1] == true) {
-                echo "<button class=\"nav_btn\">Enter marks of each student</button>";
+                echo "<button type=\"submit\" class=\"nav_btn\">Enter marks of each student</button>";
             }
             ?>
             <button type="submit" name="emp_courses" class="nav_btn">Get courses of current semester</button>
@@ -132,6 +199,28 @@
     <?php
     if (isset($_POST['emp_courses'])) {
         display_courses_t($teacher);
+    }
+    if (isset($_POST['emp_set_course_form'])) {
+        echo "<div class='form-container'>
+        <form method='post'>
+            <label for='semester'>Semester</label>
+            <input type='number' name='semester' id='semester' max='9' step='1'>
+            <label for='course_code'>Course Code</label>
+            <input type='text' name='course_code' id='course_code'>
+            <button type='submit' name='emp_enter_course'>Enter</button>
+        </form>
+    </div>";
+    }
+    if (isset($_POST['emp_enter_course'])) {
+        $course_code = $_POST['course_code'];
+        $semester = $_POST['semester'];
+
+        $result = set_course_sem($course_code, $semester, $teacher);
+        if ($result == "") {
+            echo "<script>alert('Course entered successfully!'); window.location.href='teacher'</script>";
+        } else {
+            echo "<script>alert(\"ERROR: {$result}\"); window.location.href='teacher'</script>";
+        }
     }
     ?>
 </body>
