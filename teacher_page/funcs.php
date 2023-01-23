@@ -74,7 +74,7 @@ function display_courses_t($teacher)
 {
     if ($teacher == null) {
         logout_teacher();
-        echo "<script>alert(\"ERROR: Teacher is NULL\"); window.location.href='student'</script>";
+        echo "<script>alert(\"ERROR: Teacher is NULL\"); window.location.href='teacher'</script>";
         return;
     }
     $courses = get_courses_t($teacher['employee_id']);
