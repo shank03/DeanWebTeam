@@ -207,11 +207,40 @@
         $course_code = $_POST['course_code'];
         $semester = $_POST['semester'];
 
-        $result = set_course_sem($course_code, $semester, $teacher);
-        if ($result == "") {
-            echo "<script>alert('Course entered successfully!'); window.location.href='teacher'</script>";
+        $course_data = check_course_sem($course_code, $semester);
+        if ($course_data != null) {
+            $_SESSION['course'] = $course_data;
+            if ($course_data['course_type'] == 'theory') {
+                require 'theory_marks.php';
+            } else if ($course_data['course_type'] == 'practical') {
+                require 'practical_marks.php';
+            }
         } else {
-            echo "<script>alert(\"ERROR: {$result}\"); window.location.href='teacher'</script>";
+            echo "<script>alert(\"ERROR: Course {$course_code} doesn't exists in {$semester} semester\"); window.location.href='teacher'</script>";
+        }
+    }
+
+    if (isset($_POST['emp_dist_th_course'])) {
+        $course_data = $_SESSION['course'];
+        $_SESSION['course'] = ['' => ''];
+
+        $mid_sem_marks = $_POST['mid_sem'];
+        $end_sem_marks = $_POST['end_sem'];
+        $ta_sem_marks = $_POST['ta_sem'];
+
+        $total = intval($mid_sem_marks) + intval($end_sem_marks) + intval($ta_sem_marks);
+        if ($total != 100) {
+            echo "<script>alert(\"ERROR: Total doesn't add upto 100\"); window.location.href='teacher'</script>";
+            return;
+        }
+
+        $course_entry_res = set_sem_course_entry($course_data, $mid_sem_marks, $end_sem_marks, $ta_sem_marks, $teacher);
+        if ($course_entry_res == "") {
+            echo "<script>alert(\"Course {$course_data['course_code']} entered successfully\"); window.location.href='teacher'</script>";
+            exit;
+        } else {
+            echo "<script>alert(\"ERROR: {$course_entry_res}\"); window.location.href='teacher'</script>";
+            return;
         }
     }
     ?>

@@ -100,18 +100,12 @@ function display_courses_t($teacher)
         }
         echo "</table>";
     } else {
-        echo "<p>Error retrieving courses</p>";
+        echo "<p>You not teaching currently</p>";
     }
 }
 
-function set_course_sem($course_code, $sem, $teacher)
+function check_course_sem($course_code, $sem)
 {
-    if ($teacher == null) {
-        logout_teacher();
-        echo "<script>alert(\"ERROR: Teacher is NULL\"); window.location.href='student'</script>";
-        return;
-    }
-
     $db = new PDO('mysql:host=localhost;dbname=dean', 'root', '');
     $q_course = $db->prepare('SELECT * FROM course WHERE course_code = :cc AND semester = :sem');
     $q_course->bindParam(':cc', $course_code);
@@ -119,18 +113,40 @@ function set_course_sem($course_code, $sem, $teacher)
     $q_course->execute();
 
     if ($q_course->rowCount() <= 0) {
-        return "Course {$course_code} doesn't exists in {$sem} semester";
+        return null;
     }
     $course = $q_course->fetch(PDO::FETCH_ASSOC);
+    return $course;
+}
+
+function set_sem_course_entry($course_data, $mid_sem, $end_sem, $ta_sem, $teacher)
+{
+    if ($teacher == null) {
+        logout_teacher();
+        echo "<script>alert(\"ERROR: Teacher is NULL\"); window.location.href='teacher'</script>";
+        return "";
+    }
+
+    $curr_year = date('Y');
+    $db = new PDO('mysql:host=localhost;dbname=dean', 'root', '');
+    $q_dist = $db->prepare('INSERT INTO marks_dist_theory (course_code, mid_semester_exam, end_semester_exam, teacher_assessment, semester, dist_year)
+                            VALUES (:cc, :mse, :ese, :ta, :sem, :yr)');
+    $q_dist->bindParam(':cc', $course_data['course_code']);
+    $q_dist->bindParam(':mse', $mid_sem);
+    $q_dist->bindParam(':ese', $end_sem);
+    $q_dist->bindParam(':ta', $ta_sem);
+    $q_dist->bindParam(':sem', $course_data['semester']);
+    $q_dist->bindParam(':yr', $curr_year);
+    $result = $q_dist->execute();
 
     $q_allot = $db->prepare('INSERT INTO professor_allotment (employee_id, course_code, semester, d_year, branch)
                             VALUES (:emp, :cc, :sem, :dy, :br)');
-    $q_allot->bindParam(':cc', $course_code);
-    $q_allot->bindParam(':sem', $sem);
+    $q_allot->bindParam(':cc', $course_data['course_code']);
+    $q_allot->bindParam(':sem', $course_data['semester']);
     $q_allot->bindParam(':emp', $teacher['employee_id']);
-    $q_allot->bindParam(':dy', date('Y'));
-    $q_allot->bindParam(':br', $course['branch']);
-    if ($q_allot->execute()) {
+    $q_allot->bindParam(':dy', $curr_year);
+    $q_allot->bindParam(':br', $course_data['branch']);
+    if ($q_allot->execute() && $result) {
         return "";
     } else {
         return "Error setting course: " . $q_allot->errorInfo()[2];
