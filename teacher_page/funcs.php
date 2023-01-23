@@ -53,11 +53,13 @@ function get_entry_status()
 function get_courses_t($empno)
 {
     $db = new PDO('mysql:host=localhost;dbname=dean', 'root', '');
-    $query = $db->prepare('SELECT * FROM course, 
-        (SELECT professor_allotment.course_code, professor_allotment.semester FROM professor_allotment
-        WHERE professor_allotment.employee_id = :emp 
-        ORDER BY professor_allotment.d_year DESC, professor_allotment.semester DESC LIMIT 1) AS pa 
-        WHERE course.course_code = pa.course_code AND course.semester = pa.semester');
+    $query = $db->prepare('SELECT *
+                            FROM course,
+                            (SELECT professor_allotment.course_code, professor_allotment.semester 
+                            FROM professor_allotment
+                            WHERE professor_allotment.employee_id = :emp
+                            AND professor_allotment.d_year = (SELECT MAX(professor_allotment.d_year) FROM professor_allotment WHERE professor_allotment.employee_id = :emp)) AS pa
+                            WHERE course.course_code = pa.course_code and course.semester = pa.semester');
 
     $query->bindParam(':emp', $empno);
     $query->execute();
@@ -77,18 +79,23 @@ function display_courses_t($teacher)
     }
     $courses = get_courses_t($teacher['employee_id']);
     if ($courses != null) {
-        echo "<p>You are currently teaching " . $courses[0]['stream'] . ", " . $courses[0]['branch'] . ", semester : " . $courses[0]['semester'] . "</p>";
-        echo "<table>
+        echo "<p><strong>You are currently teaching in:</strong></p>";
+        foreach ($courses as $course) {
+            echo "<p>" . $course['stream'] . ", " . $course['branch'] . ", Semester : " . $course['semester'] . "</p>";
+        }
+        echo "<br><table>
             <tr>
                 <th>Course Code</th>
                 <th>Course Name</th>
                 <th>Credits</th>
+                <th>Semester</th>
             </tr>";
         foreach ($courses as $course) {
             echo "<tr>
                 <td>" . $course['course_code'] . "</td>
                 <td>" . $course['name'] . "</td>
                 <td>" . $course['credits'] . "</td>
+                <td>" . $course['semester'] . "</td>
                 </tr>";
         }
         echo "</table>";
