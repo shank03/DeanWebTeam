@@ -1,3 +1,4 @@
+<h3>Theory Marks Distribution</h3>
 <div class='form-container'>
     <form method='post'>
         <label for='mid_sem'>Mid Semester</label>

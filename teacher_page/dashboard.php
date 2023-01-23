@@ -234,7 +234,31 @@
             return;
         }
 
-        $course_entry_res = set_sem_course_entry($course_data, $mid_sem_marks, $end_sem_marks, $ta_sem_marks, $teacher);
+        $course_entry_res = set_th_sem_course_entry($course_data, $mid_sem_marks, $end_sem_marks, $ta_sem_marks, $teacher);
+        if ($course_entry_res == "") {
+            echo "<script>alert(\"Course {$course_data['course_code']} entered successfully\"); window.location.href='teacher'</script>";
+            exit;
+        } else {
+            echo "<script>alert(\"ERROR: {$course_entry_res}\"); window.location.href='teacher'</script>";
+            return;
+        }
+    }
+    if (isset($_POST['emp_dist_pr_course'])) {
+        $course_data = $_SESSION['course'];
+        $_SESSION['course'] = ['' => ''];
+
+        $pract = $_POST['pract'];
+        $viva = $_POST['viva'];
+        $lab_file = $_POST['lab_file'];
+        $ta_sem_marks = $_POST['pr_ta_sem'];
+
+        $total = intval($pract) + intval($viva) + intval($lab_file) + intval($ta_sem_marks);
+        if ($total != 100) {
+            echo "<script>alert(\"ERROR: Total doesn't add upto 100\"); window.location.href='teacher'</script>";
+            return;
+        }
+
+        $course_entry_res = set_pr_sem_course_entry($course_data, $pract, $viva, $lab_file, $ta_sem_marks, $teacher);
         if ($course_entry_res == "") {
             echo "<script>alert(\"Course {$course_data['course_code']} entered successfully\"); window.location.href='teacher'</script>";
             exit;

@@ -119,7 +119,7 @@ function check_course_sem($course_code, $sem)
     return $course;
 }
 
-function set_sem_course_entry($course_data, $mid_sem, $end_sem, $ta_sem, $teacher)
+function set_th_sem_course_entry($course_data, $mid_sem, $end_sem, $ta_sem, $teacher)
 {
     if ($teacher == null) {
         logout_teacher();
@@ -153,9 +153,37 @@ function set_sem_course_entry($course_data, $mid_sem, $end_sem, $ta_sem, $teache
     }
 }
 
-function hash_password($password)
+function set_pr_sem_course_entry($course_data, $pract, $viva, $lab_file, $ta_sem, $teacher)
 {
-    $r_salt = file_get_contents('salt.txt');
-    $option = ['cost' => intval($r_salt)];
-    return password_hash($password, PASSWORD_BCRYPT, $option);
+    if ($teacher == null) {
+        logout_teacher();
+        echo "<script>alert(\"ERROR: Teacher is NULL\"); window.location.href='teacher'</script>";
+        return "";
+    }
+
+    $curr_year = date('Y');
+    $db = new PDO('mysql:host=localhost;dbname=dean', 'root', '');
+    $q_dist = $db->prepare('INSERT INTO marks_dist_practical (course_code, practical, viva, lab_file, teacher_assessment, semester, dist_year)
+                            VALUES (:cc, :pr, :viva, :lb, :ta, :sem, :yr)');
+    $q_dist->bindParam(':cc', $course_data['course_code']);
+    $q_dist->bindParam(':pr', $pract);
+    $q_dist->bindParam(':viva', $viva);
+    $q_dist->bindParam(':lb', $lab_file);
+    $q_dist->bindParam(':ta', $ta_sem);
+    $q_dist->bindParam(':sem', $course_data['semester']);
+    $q_dist->bindParam(':yr', $curr_year);
+    $result = $q_dist->execute();
+
+    $q_allot = $db->prepare('INSERT INTO professor_allotment (employee_id, course_code, semester, d_year, branch)
+                            VALUES (:emp, :cc, :sem, :dy, :br)');
+    $q_allot->bindParam(':cc', $course_data['course_code']);
+    $q_allot->bindParam(':sem', $course_data['semester']);
+    $q_allot->bindParam(':emp', $teacher['employee_id']);
+    $q_allot->bindParam(':dy', $curr_year);
+    $q_allot->bindParam(':br', $course_data['branch']);
+    if ($q_allot->execute() && $result) {
+        return "";
+    } else {
+        return "Error setting course: " . $q_allot->errorInfo()[2];
+    }
 }
