@@ -70,9 +70,11 @@ CREATE TABLE professor_allotment (
 );
 
 CREATE TABLE admin (
+    employee_id INT NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
     course_entry boolean NOT NULL DEFAULT FALSE,
-    grade_entry boolean NOT NULL DEFAULT FALSE
+    grade_entry boolean NOT NULL DEFAULT FALSE,
+    semester INT NOT NULL
 );
 
 # Queries

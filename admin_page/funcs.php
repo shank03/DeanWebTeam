@@ -1,22 +1,21 @@
 <?php
 session_start();
 
-function login_admin($regno, $password)
+function login_admin($password)
 {
-    $result = get_student_detail($regno);
+    $result = get_admin_detail();
     if ($result == null) {
-        return "Student doesn't exists";
+        return "Admin doesn't exists";
     }
     if (password_verify($password, $result['password_hash'])) {
-        $_SESSION['std_login'] = true;
-        $_SESSION['std_regno'] = $regno;
+        $_SESSION['admin_login'] = true;
         return "";
     } else {
         return "Incorrect password";
     }
 }
 
-function logout_student()
+function logout_admin()
 {
     unset($_POST);
     session_start();
@@ -24,11 +23,10 @@ function logout_student()
     session_destroy();
 }
 
-function get_student_detail($regno)
+function get_admin_detail()
 {
     $db = new PDO('mysql:host=localhost;dbname=dean', 'root', '');
-    $query = $db->prepare('SELECT * FROM student WHERE registration_number = :reg');
-    $query->bindParam(':reg', $regno);
+    $query = $db->prepare('SELECT * FROM admin LIMIT 1');
     $query->execute();
 
     if ($query->rowCount() <= 0) {
@@ -37,9 +35,36 @@ function get_student_detail($regno)
     return $query->fetch(PDO::FETCH_ASSOC);
 }
 
-function hash_password($password)
+function get_entry_status()
 {
-    $r_salt = file_get_contents('salt.txt');
-    $option = ['cost' => intval($r_salt)];
-    return password_hash($password, PASSWORD_BCRYPT, $option);
+    $db = new PDO('mysql:host=localhost;dbname=dean', 'root', '');
+    $query = $db->prepare('SELECT * FROM admin');
+    $query->execute();
+
+    if ($query->rowCount() <= 0) {
+        return [false, false];
+    }
+    $result = $query->fetch(PDO::FETCH_ASSOC);
+    return [boolval($result['course_entry']), boolval($result['grade_entry'])];
+}
+
+function toggle_grade_entry($val)
+{
+    $db = new PDO('mysql:host=localhost;dbname=dean', 'root', '');
+    $query = $db->prepare('UPDATE admin SET grade_entry = :v');
+    $query->bindParam(':v', $val);
+    $query->execute();
+}
+
+function toggle_course_entry($val)
+{
+    $db = new PDO('mysql:host=localhost;dbname=dean', 'root', '');
+    $query = $db->prepare('UPDATE admin SET course_entry = :v');
+    $query->bindParam(':v', $val);
+    $query->execute();
+}
+
+function change_semester()
+{
+    // TODO: Change semester
 }

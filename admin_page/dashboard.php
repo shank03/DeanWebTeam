@@ -69,25 +69,105 @@
         .nav_btn:hover {
             background-color: #5f5f5f;
         }
+
+        .form-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 56px 0 30px 0;
+        }
+
+        /* Minimalist design for form elements */
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        label,
+        button,
+        h1 {
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        label,
+        input,
+        button {
+            margin: 10px 0;
+            font-size: 16px;
+        }
+
+        input,
+        button {
+            padding: 12px;
+            border: none;
+            border-radius: 4px;
+            background-color: #424242;
+            color: #f5f5f5;
+        }
+
+        /* Increase border width and change color on focus */
+        input:focus,
+        button:focus {
+            border: 2px solid #3f51b5;
+            outline: none;
+        }
+
+        /* Rounded corners for form container */
+        .form-container {
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        /* Rounded corners for inputs and button */
+        input,
+        button {
+            border-radius: 20px;
+        }
+
+        /* Colorful button */
+        button {
+            background-color: #3f51b5;
+            color: #f5f5f5;
+        }
+
+        /* Change button color on hover */
+        button:hover {
+            background-color: #5f5f5f;
+        }
     </style>
 </head>
 
 <body>
-
-    <!-- <h1>Welcome, Professor !</h1> -->
     <?php
-            // $regno = $_SESSION['std_regno'];
-            // $student = get_student_detail($regno);
-            ?>
+    $detail = get_admin_detail();
+    $entry_stat = get_entry_status();
 
-    <h1>Welcome, <?php echo ($student != null) ? $student['first_name'] : '' ?> !</h1>
-    <p>You have successfully logged in to the student portal.</p>
+    if (isset($_POST['admin_grade_entry'])) {
+        toggle_grade_entry(!$entry_stat[1]);
+        header('Location: admin');
+        exit;
+    }
+    if (isset($_POST['admin_course_entry'])) {
+        toggle_course_entry(!$entry_stat[0]);
+        header('Location: admin');
+        exit;
+    }
+    if (isset($_POST['admin_change_sem'])) {
+        change_semester();
+        header('Location: admin');
+        exit;
+    }
+    ?>
+    <h1>Welcome, Admin</h1>
     <form method="post">
-        <div class="options">
-            <button href="transcript.php" class="nav_btn">Get my transcript</button>
-            <button href="performance.php" class="nav_btn">Previous semester performance</button>
-            <button href="courses.php" class="nav_btn">Get courses of current semester</button>
-            <button type="submit" name="logout" class="nav_btn">Logout</button>
+        <h3>Current Semester : <?php echo $detail['semester'] ?></h3>
+        <div class="form-options">
+            <button type="submit" name="admin_change_sem" class="nav_btn">Change Semester</button>
+            <button type="submit" name="admin_course_entry" class="nav_btn"><?php echo $entry_stat[0] ? "Stop Course Entry" : "Start Course Entry" ?></button>
+            <button type="submit" name="admin_grade_entry" class="nav_btn"><?php echo $entry_stat[1] ? "Stop Grade Entry" : "Start Grade Entry" ?></button>
+            <button type="submit" name="admin_logout" class="nav_btn">Logout</button>
         </div>
     </form>
 </body>
