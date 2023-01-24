@@ -164,6 +164,22 @@
         button:hover {
             background-color: #5f5f5f;
         }
+
+        .spinner {
+            width: 500px;
+            margin: 0 auto;
+        }
+
+        select {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            border-radius: 20px;
+            border: none;
+            background-color: #424242;
+            font-family: 'Montserrat', sans-serif;
+            color: #f5f5f5;
+        }
     </style>
 </head>
 
@@ -184,11 +200,11 @@
         <div class="options">
             <?php
             $entry_stat = get_entry_status();
-            if ($entry_stat[0] == true) {
+            if ($entry_stat[0]) {
                 echo "<button type=\"submit\" name=\"emp_set_course_form\" class=\"nav_btn\">Enter the courses of current semester</button>";
             }
-            if ($entry_stat[1] == true) {
-                echo "<button type=\"submit\" class=\"nav_btn\">Enter marks of each student</button>";
+            if ($entry_stat[1]) {
+                echo "<button type=\"submit\" name=\"emp_set_std_marks_form\" class=\"nav_btn\">Enter marks of each student</button>";
             }
             ?>
             <button type="submit" name="emp_courses" class="nav_btn">Get courses of current semester</button>
@@ -201,15 +217,113 @@
         display_courses_t($teacher);
     }
     if (isset($_POST['emp_set_course_form'])) {
-        require 'course.php';
+        require 'alloted_course.php';
     }
+    if (isset($_POST['emp_set_std_marks_form'])) {
+        $alloted_course_list = get_courses_t($teacher['employee_id']);
+        if ($alloted_course_list == null) {
+            echo "<h1>No courses found</h1>";
+        } else {
+            echo "<div class=\"form-container\">";
+            echo "<form method=\"post\">";
+            echo "<select name=\"course_idx\" id=\"course_idx\" class=\"spinner\">";
+            $idx = 0;
+            foreach ($alloted_course_list as $alloted_course) {
+                echo "<option value=\"{$idx}\">Sem: {$alloted_course['semester']} - {$alloted_course['name']} (" . ucfirst($alloted_course['course_type']) . ")</option>";
+                $idx++;
+            }
+            echo "</select>";
+            echo "<button type=\"submit\" name=\"emp_std_marks_enter_sub\" class=\"nav_btn\">Select</button>";
+            echo "</form>";
+            echo "</div>";
+        }
+    }
+
+    if (isset($_POST['emp_std_marks_enter_sub'])) {
+        $alloted_course_list = get_courses_t($teacher['employee_id']);
+        $alloted_course = $alloted_course_list[$_POST['course_idx']];
+
+        $students = get_students_with_course($alloted_course);
+        if ($students == null) {
+            echo "<script>alert(\"ERROR: No students left to enter marks for {$alloted_course['name']}\"); window.location.href='teacher'</script>";
+            return;
+        }
+
+        $marks_dist = get_marks_distribution($alloted_course);
+        $_SESSION['student'] = $students;
+        $_SESSION['marks_dist'] = $marks_dist;
+        $_SESSION['alloted_course'] = $alloted_course;
+
+        if ($alloted_course['course_type'] == 'theory') {
+            require 'std_theory_marks.php';
+        } else if ($alloted_course['course_type'] == 'practical') {
+            require 'std_pract_marks.php';
+        }
+    }
+
+    if (isset($_POST['emp_std_cc_en'])) {
+        $std = $_SESSION['student'][0];
+
+        $marks_dist = $_SESSION['marks_dist'];
+        $alloted_course = $_SESSION['alloted_course'];
+
+        $result = false;
+        if ($alloted_course['course_type'] == 'theory') {
+            $mid_sem_marks = $_POST['mid_sem_en'];
+            $end_sem_marks = $_POST['end_sem_en'];
+            $ta_sem_marks = $_POST['ta_sem_en'];
+
+            $result = insert_std_th_marks(
+                $alloted_course,
+                $std['registration_number'],
+                $mid_sem_marks,
+                $end_sem_marks,
+                $ta_sem_marks,
+                $alloted_course['semester'],
+                $alloted_course['d_year']
+            );
+        } else if ($alloted_course['course_type'] == 'practical') {
+            $pract_marks = $_POST['pract_en'];
+            $viva = $_POST['viva_en'];
+            $lab_file = $_POST['lab_file_en'];
+            $ta_sem_marks = $_POST['pr_ta_sem_en'];
+
+            $result = insert_std_pr_marks(
+                $alloted_course,
+                $std['registration_number'],
+                $pract_marks,
+                $viva,
+                $lab_file,
+                $ta_sem_marks,
+                $alloted_course['semester'],
+                $alloted_course['d_year']
+            );
+        }
+
+        if ($result) {
+            array_shift($_SESSION['student']);
+            if (count($_SESSION['student']) == 0) {
+                $_SESSION['alloted_course'] = [];
+                $_SESSION['student'] = [];
+                $_SESSION['marks_dist'] = [];
+                echo "<script>alert(\"All the marks have been entered\"); window.location.href='teacher'</script>";
+            } else {
+                if ($alloted_course['course_type'] == 'theory') {
+                    require 'std_theory_marks.php';
+                } else if ($alloted_course['course_type'] == 'practical') {
+                    require 'std_pract_marks.php';
+                }
+            }
+        }
+    }
+
     if (isset($_POST['emp_enter_course'])) {
         $course_code = $_POST['course_code'];
         $semester = $_POST['semester'];
 
         $course_data = check_course_sem($course_code, $semester);
         if ($course_data != null) {
-            $_SESSION['course'] = $course_data;
+            $_SESSION['alloted_course'] = $course_data;
             if ($course_data['course_type'] == 'theory') {
                 require 'theory_marks.php';
             } else if ($course_data['course_type'] == 'practical') {
@@ -221,8 +335,8 @@
     }
 
     if (isset($_POST['emp_dist_th_course'])) {
-        $course_data = $_SESSION['course'];
-        $_SESSION['course'] = ['' => ''];
+        $course_data = $_SESSION['alloted_course'];
+        $_SESSION['alloted_course'] = ['' => ''];
 
         $mid_sem_marks = $_POST['mid_sem'];
         $end_sem_marks = $_POST['end_sem'];
@@ -244,8 +358,8 @@
         }
     }
     if (isset($_POST['emp_dist_pr_course'])) {
-        $course_data = $_SESSION['course'];
-        $_SESSION['course'] = ['' => ''];
+        $course_data = $_SESSION['alloted_course'];
+        $_SESSION['alloted_course'] = ['' => ''];
 
         $pract = $_POST['pract'];
         $viva = $_POST['viva'];

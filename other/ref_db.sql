@@ -27,7 +27,8 @@ CREATE TABLE course (
     semester INT NOT NULL,
     credits INT NOT NULL,
     branch VARCHAR(255) NOT NULL,
-    stream VARCHAR(255) NOT NULL
+    stream VARCHAR(255) NOT NULL,
+    course_type VARCHAR(255) NOT NULL
 );
 
 CREATE TABLE marks_dist_theory (
@@ -87,8 +88,8 @@ UPDATE admin SET course_entry = true, grade_entry = true;
 INSERT INTO professor (employee_id, first_name, last_name, phone_number, email, password_hash, date_of_join)
 VALUES (1116, 'Dr. Dushyant', 'Kumar Singh', '1234567890', 'dushyant@mnnit.ac.in', '$2y$12$NQjkpTMrmkCcOynIgiHiG.VRmzIMCEMxKsFLuvEkRYYequD2V4GNu', '2010-01-01');
 
-INSERT INTO course (course_code, name, semester, credits, branch, stream)
-VALUES ('CS13101', 'Data Structures', 3, 4, 'Computer Science', 'B.Tech'),
+INSERT INTO course (course_code, name, semester, credits, branch, stream, course_type)
+VALUES ('CS13101', 'Data Structures', 3, 4, 'Computer Science', 'B.Tech', 'theory'),
 ('CS15101', 'Microprocessor and its Application', 5, 3, 'Computer Science', 'B.Tech'),
 ('CS15102', 'Operating Systems', 5, 4, 'Computer Science', 'B.Tech'),
 ('CS15103', 'Database Management System', 5, 4, 'Computer Science', 'B.Tech'),

@@ -55,12 +55,11 @@ function get_courses_t($empno)
     $db = new PDO('mysql:host=localhost;dbname=dean', 'root', '');
     $query = $db->prepare('SELECT *
                             FROM course,
-                            (SELECT professor_allotment.course_code, professor_allotment.semester 
+                            (SELECT * 
                             FROM professor_allotment
                             WHERE professor_allotment.employee_id = :emp
                             AND professor_allotment.d_year = (SELECT MAX(professor_allotment.d_year) FROM professor_allotment WHERE professor_allotment.employee_id = :emp)) AS pa
                             WHERE course.course_code = pa.course_code and course.semester = pa.semester');
-
     $query->bindParam(':emp', $empno);
     $query->execute();
 
@@ -89,6 +88,7 @@ function display_courses_t($teacher)
                 <th>Course Name</th>
                 <th>Credits</th>
                 <th>Semester</th>
+                <th>Type</th>
             </tr>";
         foreach ($courses as $course) {
             echo "<tr>
@@ -96,6 +96,7 @@ function display_courses_t($teacher)
                 <td>" . $course['name'] . "</td>
                 <td>" . $course['credits'] . "</td>
                 <td>" . $course['semester'] . "</td>
+                <td>" . ucfirst($course['course_type']) . "</td>
                 </tr>";
         }
         echo "</table>";
@@ -115,12 +116,16 @@ function check_course_sem($course_code, $sem)
     if ($q_course->rowCount() <= 0) {
         return null;
     }
-    $course = $q_course->fetch(PDO::FETCH_ASSOC);
-    return $course;
+    return $q_course->fetch(PDO::FETCH_ASSOC);
 }
 
-function set_th_sem_course_entry($course_data, $mid_sem, $end_sem, $ta_sem, $teacher)
-{
+function set_th_sem_course_entry(
+    $course_data,
+    $mid_sem,
+    $end_sem,
+    $ta_sem,
+    $teacher
+) {
     if ($teacher == null) {
         logout_teacher();
         echo "<script>alert(\"ERROR: Teacher is NULL\"); window.location.href='teacher'</script>";
@@ -153,8 +158,14 @@ function set_th_sem_course_entry($course_data, $mid_sem, $end_sem, $ta_sem, $tea
     }
 }
 
-function set_pr_sem_course_entry($course_data, $pract, $viva, $lab_file, $ta_sem, $teacher)
-{
+function set_pr_sem_course_entry(
+    $course_data,
+    $pract,
+    $viva,
+    $lab_file,
+    $ta_sem,
+    $teacher
+) {
     if ($teacher == null) {
         logout_teacher();
         echo "<script>alert(\"ERROR: Teacher is NULL\"); window.location.href='teacher'</script>";
@@ -186,4 +197,86 @@ function set_pr_sem_course_entry($course_data, $pract, $viva, $lab_file, $ta_sem
     } else {
         return "Error setting course: " . $q_allot->errorInfo()[2];
     }
+}
+
+function get_students_with_course($course_list)
+{
+    $db = new PDO('mysql:host=localhost;dbname=dean', 'root', '');
+    $q_std = $db->prepare('SELECT * FROM student WHERE student.registration_number
+                            NOT IN (SELECT marks.student_registration_number FROM marks WHERE marks.course_code = :cc AND marks.semester = :sem AND marks.d_year = :yr)
+                            AND student.semester = :sem');
+    $q_std->bindParam(':cc', $course_list['course_code']);
+    $q_std->bindParam(':sem', $course_list['semester']);
+    $q_std->bindParam(':yr', $course_list['d_year']);
+    $q_std->execute();
+    if ($q_std->rowCount() <= 0) {
+        return null;
+    }
+    return $q_std->fetchAll(PDO::FETCH_ASSOC);
+}
+
+function get_marks_distribution($course)
+{
+    $db = new PDO('mysql:host=localhost;dbname=dean', 'root', '');
+    $q_dist = null;
+    if ($course['course_type'] == 'theory') {
+        $q_dist = $db->prepare('SELECT * FROM marks_dist_theory WHERE course_code = :cc AND semester = :sem AND dist_year = :yr');
+    } else {
+        $q_dist = $db->prepare('SELECT * FROM marks_dist_practical WHERE course_code = :cc AND semester = :sem AND dist_year = :yr');
+    }
+    $q_dist->bindParam(':cc', $course['course_code']);
+    $q_dist->bindParam(':sem', $course['semester']);
+    $q_dist->bindParam(':yr', $course['d_year']);
+    $q_dist->execute();
+    return $q_dist->fetch(PDO::FETCH_ASSOC);
+}
+
+function insert_std_th_marks(
+    $course,
+    $regno,
+    $mid_sem,
+    $end_sem,
+    $ta_sem,
+    $sem,
+    $d_year
+) {
+    $db = new PDO('mysql:host=localhost;dbname=dean', 'root', '');
+    $q = $db->prepare('INSERT INTO marks (course_code, student_registration_number, 
+                        mid_semester_exam, end_semester_exam, teacher_assessment, 
+                        practical, viva, lab_file, semester, d_year)
+                        VALUES (:cc, :reg, :mse, :ese, :ta, 0, 0, 0, :sem, :yr)');
+    $q->bindParam(':cc', $course['course_code']);
+    $q->bindParam(':reg', $regno);
+    $q->bindParam(':mse', $mid_sem);
+    $q->bindParam(':ese', $end_sem);
+    $q->bindParam(':ta', $ta_sem);
+    $q->bindParam(':sem', $sem);
+    $q->bindParam(':yr', $d_year);
+    return $q->execute();
+}
+
+function insert_std_pr_marks(
+    $course,
+    $regno,
+    $pract,
+    $viva,
+    $lab_file,
+    $ta_sem,
+    $sem,
+    $d_year
+) {
+    $db = new PDO('mysql:host=localhost;dbname=dean', 'root', '');
+    $q = $db->prepare('INSERT INTO marks (course_code, student_registration_number, 
+                        mid_semester_exam, end_semester_exam, teacher_assessment, 
+                        practical, viva, lab_file, semester, d_year)
+                        VALUES (:cc, :reg, 0, 0, :ta, :pr, :viva, :lb, :sem, :yr)');
+    $q->bindParam(':cc', $course['course_code']);
+    $q->bindParam(':reg', $regno);
+    $q->bindParam(':pr', $pract);
+    $q->bindParam(':viva', $viva);
+    $q->bindParam(':lb', $lab_file);
+    $q->bindParam(':ta', $ta_sem);
+    $q->bindParam(':sem', $sem);
+    $q->bindParam(':yr', $d_year);
+    return $q->execute();
 }
