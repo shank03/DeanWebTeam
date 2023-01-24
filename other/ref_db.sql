@@ -42,9 +42,7 @@ CREATE TABLE marks_dist_theory (
 
 CREATE TABLE marks_dist_practical (
     course_code VARCHAR(255) PRIMARY KEY REFERENCES course(course_code),
-    practical INT NOT NULL,
-    viva INT NOT NULL,
-    lab_file INT NOT NULL,
+    end_semester_exam INT NOT NULL,
     teacher_assessment INT NOT NULL,
     semester INT NOT NULL,
     dist_year INT NOT NULL
@@ -56,9 +54,6 @@ CREATE TABLE marks (
     mid_semester_exam INT NOT NULL DEFAULT 0,
     end_semester_exam INT NOT NULL DEFAULT 0,
     teacher_assessment INT NOT NULL DEFAULT 0,
-    practical INT NOT NULL DEFAULT 0,
-    viva INT NOT NULL DEFAULT 0,
-    lab_file INT NOT NULL DEFAULT 0,
     semester INT NOT NULL DEFAULT 0,
     d_year INT NOT NULL DEFAULT 0,
     PRIMARY KEY (course_code,student_registration_number,semester),

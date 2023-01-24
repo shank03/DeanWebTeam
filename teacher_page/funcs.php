@@ -160,9 +160,7 @@ function set_th_sem_course_entry(
 
 function set_pr_sem_course_entry(
     $course_data,
-    $pract,
-    $viva,
-    $lab_file,
+    $end_sem,
     $ta_sem,
     $teacher
 ) {
@@ -174,12 +172,10 @@ function set_pr_sem_course_entry(
 
     $curr_year = date('Y');
     $db = new PDO('mysql:host=localhost;dbname=dean', 'root', '');
-    $q_dist = $db->prepare('INSERT INTO marks_dist_practical (course_code, practical, viva, lab_file, teacher_assessment, semester, dist_year)
-                            VALUES (:cc, :pr, :viva, :lb, :ta, :sem, :yr)');
+    $q_dist = $db->prepare('INSERT INTO marks_dist_practical (course_code, end_semester_exam, teacher_assessment, semester, dist_year)
+                            VALUES (:cc, :ese, :ta, :sem, :yr)');
     $q_dist->bindParam(':cc', $course_data['course_code']);
-    $q_dist->bindParam(':pr', $pract);
-    $q_dist->bindParam(':viva', $viva);
-    $q_dist->bindParam(':lb', $lab_file);
+    $q_dist->bindParam(':ese', $end_sem);
     $q_dist->bindParam(':ta', $ta_sem);
     $q_dist->bindParam(':sem', $course_data['semester']);
     $q_dist->bindParam(':yr', $curr_year);
@@ -258,23 +254,18 @@ function insert_std_th_marks(
 function insert_std_pr_marks(
     $course,
     $regno,
-    $pract,
-    $viva,
-    $lab_file,
+    $end_sem,
     $ta_sem,
     $sem,
     $d_year
 ) {
     $db = new PDO('mysql:host=localhost;dbname=dean', 'root', '');
     $q = $db->prepare('INSERT INTO marks (course_code, student_registration_number, 
-                        mid_semester_exam, end_semester_exam, teacher_assessment, 
-                        practical, viva, lab_file, semester, d_year)
-                        VALUES (:cc, :reg, 0, 0, :ta, :pr, :viva, :lb, :sem, :yr)');
+                        mid_semester_exam, end_semester_exam, teacher_assessment, semester, d_year)
+                        VALUES (:cc, :reg, 0, :ese, :ta, :sem, :yr)');
     $q->bindParam(':cc', $course['course_code']);
     $q->bindParam(':reg', $regno);
-    $q->bindParam(':pr', $pract);
-    $q->bindParam(':viva', $viva);
-    $q->bindParam(':lb', $lab_file);
+    $q->bindParam(':ese', $end_sem);
     $q->bindParam(':ta', $ta_sem);
     $q->bindParam(':sem', $sem);
     $q->bindParam(':yr', $d_year);

@@ -93,11 +93,9 @@ function get_transcript($student, $sem)
 
 function get_grade($course)
 {
-    $marks = 0;
+    $marks = intval($course['end_semester_exam']) + intval($course['teacher_assessment']);
     if ($course['course_type'] == 'theory') {
-        $marks = intval($course['mid_semester_exam']) + intval($course['end_semester_exam']) + intval($course['teacher_assessment']);
-    } else if ($course['course_type'] == 'practical') {
-        $marks = intval($course['practical']) + intval($course['viva']) + intval($course['lab_file']) + intval($course['teacher_assessment']);
+        $marks += intval($course['mid_semester_exam']);
     }
     if ($marks >= 85) {
         return ['grade' => 'A+', 'points' => 10];
@@ -137,7 +135,7 @@ function get_result($student)
     $entry_stat = get_entry_status();
 
     if ($entry_stat[0] || $entry_stat[1]) {
-        echo "<p>Transcript not available</p>";
+        echo "<p>Result not available</p>";
         return;
     }
 
@@ -187,7 +185,7 @@ function get_result($student)
                 </tr>";
         echo "</table>";
     } else {
-        echo "<p>Transcript not available for semester : " . $i . "</p>";
+        echo "<p>Result not available for current semester</p>";
     }
     echo "<h3>CPI : " . number_format((float)($cpi / intval($student['semester'])), 2, '.', '') . "</h3>";
 }
@@ -200,7 +198,6 @@ function get_ui_transcript($student)
     $last_sem = intval($student['semester']);
     if ($entry_stat[0] || $entry_stat[1]) {
         $last_sem -= 1;
-        return;
     }
 
     for ($i = 1; $i <= $last_sem; ++$i) {

@@ -283,17 +283,13 @@
                 $alloted_course['d_year']
             );
         } else if ($alloted_course['course_type'] == 'practical') {
-            $pract_marks = $_POST['pract_en'];
-            $viva = $_POST['viva_en'];
-            $lab_file = $_POST['lab_file_en'];
+            $end_sem_marks = $_POST['pr_end_sem_en'];
             $ta_sem_marks = $_POST['pr_ta_sem_en'];
 
             $result = insert_std_pr_marks(
                 $alloted_course,
                 $std['registration_number'],
-                $pract_marks,
-                $viva,
-                $lab_file,
+                $end_sem_marks,
                 $ta_sem_marks,
                 $alloted_course['semester'],
                 $alloted_course['d_year']
@@ -361,18 +357,16 @@
         $course_data = $_SESSION['alloted_course'];
         $_SESSION['alloted_course'] = ['' => ''];
 
-        $pract = $_POST['pract'];
-        $viva = $_POST['viva'];
-        $lab_file = $_POST['lab_file'];
+        $end_sem_marks = $_POST['pr_end_sem'];
         $ta_sem_marks = $_POST['pr_ta_sem'];
 
-        $total = intval($pract) + intval($viva) + intval($lab_file) + intval($ta_sem_marks);
+        $total = intval($end_sem_marks) + intval($ta_sem_marks);
         if ($total != 100) {
             echo "<script>alert(\"ERROR: Total doesn't add upto 100\"); window.location.href='teacher'</script>";
             return;
         }
 
-        $course_entry_res = set_pr_sem_course_entry($course_data, $pract, $viva, $lab_file, $ta_sem_marks, $teacher);
+        $course_entry_res = set_pr_sem_course_entry($course_data, $end_sem_marks, $ta_sem_marks, $teacher);
         if ($course_entry_res == "") {
             echo "<script>alert(\"Course {$course_data['course_code']} entered successfully\"); window.location.href='teacher'</script>";
             exit;
