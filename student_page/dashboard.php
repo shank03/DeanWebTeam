@@ -97,6 +97,13 @@
             background-color: #f5f5f5;
             color: #3f51b5;
         }
+
+        hr {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 50%;
+        }
     </style>
 </head>
 
@@ -113,53 +120,27 @@
     <p>You have successfully logged in to the student portal.</p>
     <form method="post">
         <div class="options">
-            <button type="submit" class="nav_btn">Get my transcript</button>
-            <button type="submit" class="nav_btn">Previous semester performance</button>
+            <button type="submit" name="get_result" class="nav_btn">This semester result</button>
+            <button type="submit" name="get_transcript" class="nav_btn">Get my transcript</button>
+            <button type="submit" name="prev_sem_perf" class="nav_btn">Previous semester performance</button>
             <button type="submit" name="std_get_courses" class="nav_btn">Get courses of current semester</button>
             <button type="submit" name="logout" class="nav_btn">Logout</button>
         </div>
     </form>
 
     <?php
-    // $button = 0;
-    // if (isset($_SESSION['button'])) {
-    //     $button = $_SESSION['button'];
-    // }
-
-    // if ($button == 0) {
-    //     echo "<p>Select to button to get started.</p>";
-    // } else if ($button == 1) {
-    // } else if ($button == 2) {
-    // } else if ($button == 3) {
-    //     display_courses($student);
-    // }
-
     if (isset($_POST['std_get_courses'])) {
         display_courses($student);
     }
-    // if (isset($_POST['get_transcript'])) {
-    //     $transcript = get_transcript($regno);
-    //     if ($transcript != null) {
-    //         echo "<table>
-    //         <tr>
-    //             <th>Course Code</th>
-    //             <th>Course Name</th>
-    //             <th>Credits</th>
-    //             <th>Grade</th>
-    //         </tr>";
-    //         foreach ($transcript as $course) {
-    //             echo "<tr>
-    //             <td>" . $course['course_code'] . "</td>
-    //             <td>" . $course['course_name'] . "</td>
-    //             <td>" . $course['credits'] . "</td>
-    //             <td>" . $course['grade'] . "</td>
-    //             </tr>";
-    //         }
-    //         echo "</table>";
-    //     } else {
-    //         echo "<p>Transcript not available.</p>";
-    //     }
-    // }
+    if (isset($_POST['get_result'])) {
+        get_result($student);
+    }
+    if (isset($_POST['get_transcript'])) {
+        get_ui_transcript($student);
+    }
+    if (isset($_POST['prev_sem_perf'])) {
+        get_prev_sem_pref($student);
+    }
     ?>
 
 </body>
