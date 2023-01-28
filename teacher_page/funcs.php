@@ -93,7 +93,7 @@ function display_courses_t($teacher)
         foreach ($courses as $course) {
             echo "<tr>
                 <td>" . $course['course_code'] . "</td>
-                <td>" . $course['name'] . "</td>
+                <td>" . $course['course_name'] . "</td>
                 <td>" . $course['credits'] . "</td>
                 <td>" . $course['semester'] . "</td>
                 <td>" . ucfirst($course['course_type']) . "</td>

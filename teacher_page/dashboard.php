@@ -229,7 +229,7 @@
             echo "<select name=\"course_idx\" id=\"course_idx\" class=\"spinner\">";
             $idx = 0;
             foreach ($alloted_course_list as $alloted_course) {
-                echo "<option value=\"{$idx}\">Sem: {$alloted_course['semester']} - {$alloted_course['name']} (" . ucfirst($alloted_course['course_type']) . ")</option>";
+                echo "<option value=\"{$idx}\">Sem: {$alloted_course['semester']} - {$alloted_course['course_name']} (" . ucfirst($alloted_course['course_type']) . ")</option>";
                 $idx++;
             }
             echo "</select>";
@@ -245,7 +245,7 @@
 
         $students = get_students_with_course($alloted_course);
         if ($students == null) {
-            echo "<script>alert(\"ERROR: No students left to enter marks for {$alloted_course['name']}\"); window.location.href='teacher'</script>";
+            echo "<script>alert(\"ERROR: No students left to enter marks for {$alloted_course['course_name']}\"); window.location.href='teacher'</script>";
             return;
         }
 

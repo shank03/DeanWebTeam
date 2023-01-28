@@ -23,29 +23,34 @@ CREATE TABLE student (
 
 CREATE TABLE course (
     course_code VARCHAR(255) PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
+    course_name VARCHAR(255) NOT NULL,
     semester INT NOT NULL,
     credits INT NOT NULL,
     branch VARCHAR(255) NOT NULL,
     stream VARCHAR(255) NOT NULL,
-    course_type VARCHAR(255) NOT NULL
+    course_type VARCHAR(255) NOT NULL,
+    PRIMARY KEY (course_name,semester)
 );
 
 CREATE TABLE marks_dist_theory (
-    course_code VARCHAR(255) PRIMARY KEY REFERENCES course(course_code),
+    course_code VARCHAR(255),
     mid_semester_exam INT NOT NULL,
     end_semester_exam INT NOT NULL,
     teacher_assessment INT NOT NULL,
     semester INT NOT NULL,
-    dist_year INT NOT NULL
+    dist_year INT NOT NULL,
+    PRIMARY KEY (course_code,semester,dist_year),
+    FOREIGN KEY (course_code) REFERENCES course(course_code)
 );
 
 CREATE TABLE marks_dist_practical (
-    course_code VARCHAR(255) PRIMARY KEY REFERENCES course(course_code),
+    course_code VARCHAR(255),
     end_semester_exam INT NOT NULL,
     teacher_assessment INT NOT NULL,
     semester INT NOT NULL,
-    dist_year INT NOT NULL
+    dist_year INT NOT NULL,
+    PRIMARY KEY (course_code,semester,dist_year),
+    FOREIGN KEY (course_code) REFERENCES course(course_code)
 );
 
 CREATE TABLE marks (
@@ -56,7 +61,7 @@ CREATE TABLE marks (
     teacher_assessment INT NOT NULL DEFAULT 0,
     semester INT NOT NULL DEFAULT 0,
     d_year INT NOT NULL DEFAULT 0,
-    PRIMARY KEY (course_code,student_registration_number,semester),
+    PRIMARY KEY (course_code,student_registration_number,semester,d_year),
     FOREIGN KEY (course_code) REFERENCES course(course_code),
     FOREIGN KEY (student_registration_number) REFERENCES student(registration_number)
 );
@@ -64,9 +69,10 @@ CREATE TABLE marks (
 CREATE TABLE professor_allotment (
     employee_id INT REFERENCES professor(employee_id),
     course_code VARCHAR(255) REFERENCES course(course_code),
+    branch VARCHAR(255) NOT NULL,
     semester INT NOT NULL,
     d_year INT NOT NULL,
-    PRIMARY KEY (employee_id,course_code,semester)
+    PRIMARY KEY (employee_id,course_code,semester,d_year)
 );
 
 CREATE TABLE admin (
@@ -97,3 +103,11 @@ VALUES ('CS13101', 'Data Structures', 3, 4, 'Computer Science', 'B.Tech', 'theor
 ('CS15202', 'Microprocessor', 5, 2, 'Computer Science', 'B.Tech'),
 ('CS15203', 'Operating Systems', 5, 2, 'Computer Science', 'B.Tech'),
 ('CS15204', 'Database System', 5, 2, 'Computer Science', 'B.Tech');
+
+INSERT INTO course (course_code, name, semester, credits, branch, stream, course_type)
+VALUES ('CS16101', 'Embedded Systems', 6, 3, 'Computer Science', 'B.Tech', 'theory'),
+('CS16102', 'Compiler Construction', 6, 3, 'Computer Science', 'B.Tech', 'theory'),
+('CS16103', 'Data Mining', 6, 3, 'Computer Science', 'B.Tech', 'theory'),
+('CS16104', 'Cryptography & Network Security', 6, 3, 'Computer Science', 'B.Tech', 'theory'),
+('CS16105', 'Computer Networks', 6, 4, 'Computer Science', 'B.Tech', 'theory'),
+('CS16106', 'Software Engineering', 6, 3, 'Computer Science', 'B.Tech', 'theory');
