@@ -84,8 +84,13 @@ function get_transcript($student, $sem)
 {
     $db = new PDO('mysql:host=localhost;dbname=dean', 'root', '');
     $query = $db->prepare('SELECT * FROM marks INNER JOIN course ON marks.course_code = course.course_code AND marks.semester = course.semester
-                            WHERE marks.student_registration_number = :reg AND marks.semester = :sem');
+                            WHERE marks.student_registration_number = :reg 
+                            AND marks.semester = :sem
+                            AND course.branch = :br
+                            AND course.stream = :str');
     $query->bindParam(':reg', $student['registration_number']);
+    $query->bindParam(':br', $student['branch']);
+    $query->bindParam(':str', $student['stream']);
     $query->bindParam(':sem', $sem);
     $query->execute();
     return $query->fetchAll(PDO::FETCH_ASSOC);
@@ -93,27 +98,17 @@ function get_transcript($student, $sem)
 
 function get_grade($course)
 {
-    $marks = intval($course['end_semester_exam']) + intval($course['teacher_assessment']);
-    if ($course['course_type'] == 'theory') {
-        $marks += intval($course['mid_semester_exam']);
-    }
-    if ($marks >= 85) {
-        return ['grade' => 'A+', 'points' => 10];
-    } else if ($marks >= 75 && $marks <= 84) {
-        return ['grade' => 'A', 'points' => 9];
-    } else if ($marks >= 65 && $marks <= 74) {
-        return ['grade' => 'B+', 'points' => 8];
-    } else if ($marks >= 55 && $marks <= 64) {
-        return ['grade' => 'B', 'points' => 7];
-    } else if ($marks >= 45 && $marks <= 44) {
-        return ['grade' => 'C', 'points' => 6];
-    } else if ($marks >= 30 && $marks <= 44) {
-        return ['grade' => 'D', 'points' => 4];
-    } else if ($marks >= 15 && $marks <= 29) {
-        return ['grade' => 'E', 'points' => 2];
-    } else {
-        return ['grade' => 'F', 'points' => 0];
-    }
+    $points = [
+        10 => 'A+',
+        9 => 'A',
+        8 => 'B+',
+        7 => 'B',
+        6 => 'C',
+        4 => 'D',
+        2 => 'E',
+        0 => 'F'
+    ];
+    return $points[$course['points']];
 }
 
 function get_entry_status()
@@ -145,8 +140,8 @@ function get_result($student)
             $total_marks = 0;
             $total_credits = 0;
             foreach ($transcript as $course) {
-                $grade = get_grade($course);
-                $total_marks += (intval($grade['points']) * intval($course['credits']));
+                // $grade = get_grade($course);
+                $total_marks += (intval($course['points']) * intval($course['credits']));
                 $total_credits += intval($course['credits']);
             }
             $spi = $total_marks / $total_credits;
@@ -171,9 +166,9 @@ function get_result($student)
                 <td>" . $course['course_code'] . "</td>
                 <td>" . $course['course_name'] . "</td>
                 <td>" . $course['credits'] . "</td>
-                <td>" . $grade['grade'] . "</td>
+                <td>" . $grade . "</td>
                 </tr>";
-            $total_marks += (intval($grade['points']) * intval($course['credits']));
+            $total_marks += (intval($course['points']) * intval($course['credits']));
             $total_credits += intval($course['credits']);
         }
         $spi = $total_marks / $total_credits;
@@ -219,9 +214,9 @@ function get_ui_transcript($student)
                 <td>" . $course['course_code'] . "</td>
                 <td>" . $course['course_name'] . "</td>
                 <td>" . $course['credits'] . "</td>
-                <td>" . $grade['grade'] . "</td>
+                <td>" . $grade . "</td>
                 </tr>";
-                $total_marks += (intval($grade['points']) * intval($course['credits']));
+                $total_marks += (intval($course['points']) * intval($course['credits']));
                 $total_credits += intval($course['credits']);
             }
             $spi = $total_marks / $total_credits;
@@ -259,8 +254,7 @@ function get_prev_sem_pref($student)
             $total_marks = 0;
             $total_credits = 0;
             foreach ($transcript as $course) {
-                $grade = get_grade($course);
-                $total_marks += (intval($grade['points']) * intval($course['credits']));
+                $total_marks += (intval($course['points']) * intval($course['credits']));
                 $total_credits += intval($course['credits']);
             }
             $spi = $total_marks / $total_credits;

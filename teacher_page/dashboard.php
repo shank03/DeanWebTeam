@@ -187,6 +187,7 @@
     <?php
     $empno = $_SESSION['emp_no'];
     $teacher = get_teacher_detail($empno);
+    $semester = get_semester();
 
     $first_name = "";
     $last_name = "";
@@ -196,6 +197,7 @@
     }
     ?>
     <h1>Welcome, <?php echo $first_name . " " . $last_name ?></h1>
+    <h2>Current semester : &nbsp;&nbsp;&nbsp;&nbsp; <?php echo $semester ?></h2>
     <form method="post">
         <div class="options">
             <?php
@@ -214,13 +216,21 @@
 
     <?php
     if (isset($_POST['emp_courses'])) {
-        display_courses_t($teacher);
+        display_courses_t($teacher, $semester);
     }
     if (isset($_POST['emp_set_course_form'])) {
+        require 'stream_form.php';
+    }
+    if (isset($_POST['emp_enter_str'])) {
+        $_SESSION['emp_sel_stream'] = $_POST['course_stream'];
+        require 'branch_form.php';
+    }
+    if (isset($_POST['emp_enter_br'])) {
+        $_SESSION['emp_sel_branch'] = $_POST['course_branch'];
         require 'alloted_course.php';
     }
     if (isset($_POST['emp_set_std_marks_form'])) {
-        $alloted_course_list = get_courses_t($teacher['employee_id']);
+        $alloted_course_list = get_alloted_courses($teacher['employee_id'], $semester);
         if ($alloted_course_list == null) {
             echo "<h1>No courses found</h1>";
         } else {
@@ -240,7 +250,7 @@
     }
 
     if (isset($_POST['emp_std_marks_enter_sub'])) {
-        $alloted_course_list = get_courses_t($teacher['employee_id']);
+        $alloted_course_list = get_alloted_courses($teacher['employee_id'], $semester);
         $alloted_course = $alloted_course_list[$_POST['course_idx']];
 
         $students = get_students_with_course($alloted_course);
@@ -315,9 +325,13 @@
 
     if (isset($_POST['emp_enter_course'])) {
         $course_code = $_POST['course_code'];
-        $semester = $_POST['semester'];
-
-        $course_data = check_course_sem($course_code, $semester);
+        $course_list = get_courses($semester, $_SESSION['emp_sel_branch'], $_SESSION['emp_sel_stream']);
+        $course_data = null;
+        foreach ($course_list as $course) {
+            if ($course['course_code'] == $course_code) {
+                $course_data = $course;
+            }
+        }
         if ($course_data != null) {
             $_SESSION['alloted_course'] = $course_data;
             if ($course_data['course_type'] == 'theory') {

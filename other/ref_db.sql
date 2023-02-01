@@ -1,4 +1,4 @@
-# This file contains only the schemas to refer for queries
+# This file contains the schemas to refer for queries
 
 CREATE TABLE professor (
     employee_id INT PRIMARY KEY,
@@ -49,6 +49,7 @@ CREATE TABLE marks (
     mid_semester_exam INT NOT NULL DEFAULT 0,
     end_semester_exam INT NOT NULL DEFAULT 0,
     teacher_assessment INT NOT NULL DEFAULT 0,
+    points INT NOT NULL DEFAULT 0,
     semester INT NOT NULL DEFAULT 0,
     d_year INT NOT NULL DEFAULT 0,
     PRIMARY KEY (course_code,student_registration_number,semester,d_year),
@@ -58,12 +59,13 @@ CREATE TABLE marks (
 
 CREATE TABLE professor_allotment (
     employee_id INT NOT NULL,
-    course_code VARCHAR(255) REFERENCES course(course_code),
+    course_code VARCHAR(255) NOT NULL,
     branch VARCHAR(255) NOT NULL,
     semester INT NOT NULL,
     d_year INT NOT NULL,
     PRIMARY KEY (employee_id,course_code,semester,d_year),
-    FOREIGN KEY (employee_id) REFERENCES professor(employee_id)
+    FOREIGN KEY (employee_id) REFERENCES professor(employee_id),
+    FOREIGN KEY (course_code) REFERENCES course(course_code)
 );
 
 CREATE TABLE admin (

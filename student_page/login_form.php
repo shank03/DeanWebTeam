@@ -98,7 +98,7 @@
     <div class="form-container">
         <form method="post">
             <label for="registrationNumber">Registration Number</label>
-            <input type="number" name="registrationNumber" id="registrationNumber" max="99999999" value="<?php echo $regno ?>">
+            <input type="text" name="registrationNumber" id="registrationNumber" maxlength="8" value="<?php echo $regno ?>">
             <label for="password">Password</label>
             <input type="password" name="password" id="password" minlength="6">
             <button type="submit" name="submit">Login</button>
