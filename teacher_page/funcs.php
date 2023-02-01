@@ -238,9 +238,8 @@ function insert_std_th_marks(
 ) {
     $db = new PDO('mysql:host=localhost;dbname=dean', 'root', '');
     $q = $db->prepare('INSERT INTO marks (course_code, student_registration_number, 
-                        mid_semester_exam, end_semester_exam, teacher_assessment, 
-                        practical, viva, lab_file, semester, d_year)
-                        VALUES (:cc, :reg, :mse, :ese, :ta, 0, 0, 0, :sem, :yr)');
+                        mid_semester_exam, end_semester_exam, teacher_assessment, semester, d_year)
+                        VALUES (:cc, :reg, :mse, :ese, :ta, :sem, :yr)');
     $q->bindParam(':cc', $course['course_code']);
     $q->bindParam(':reg', $regno);
     $q->bindParam(':mse', $mid_sem);
