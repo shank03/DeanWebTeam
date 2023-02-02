@@ -140,7 +140,6 @@ function get_result($student)
             $total_marks = 0;
             $total_credits = 0;
             foreach ($transcript as $course) {
-                // $grade = get_grade($course);
                 $total_marks += (intval($course['points']) * intval($course['credits']));
                 $total_credits += intval($course['credits']);
             }

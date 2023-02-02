@@ -35,6 +35,14 @@ function get_admin_detail()
     return $query->fetch(PDO::FETCH_ASSOC);
 }
 
+function get_semester()
+{
+    $db = new PDO('mysql:host=localhost;dbname=dean', 'root', '');
+    $query = $db->prepare('SELECT * FROM admin');
+    $query->execute();
+    return $query->fetch(PDO::FETCH_ASSOC)['semester'];
+}
+
 function get_entry_status()
 {
     $db = new PDO('mysql:host=localhost;dbname=dean', 'root', '');
@@ -48,12 +56,84 @@ function get_entry_status()
     return [boolval($result['course_entry']), boolval($result['grade_entry'])];
 }
 
-function toggle_grade_entry($val)
+function get_prev_student_marks($student)
+{
+    $db = new PDO('mysql:host=localhost;dbname=dean', 'root', '');
+    $query = $db->prepare('SELECT * FROM semester_marks WHERE student_registration_number = :reg');
+    $query->bindParam(':reg', $student['registration_number']);
+    $query->execute();
+    return $query->fetchAll(PDO::FETCH_ASSOC);
+}
+
+function get_student_details($student, $semester)
+{
+    $db = new PDO('mysql:host=localhost;dbname=dean', 'root', '');
+    $query = $db->prepare('SELECT * FROM marks INNER JOIN course ON marks.course_code = course.course_code AND marks.semester = course.semester
+                            WHERE marks.student_registration_number = :reg 
+                            AND marks.semester = :sem
+                            AND course.branch = :br
+                            AND course.stream = :str');
+    $query->bindParam(':reg', $student['registration_number']);
+    $query->bindParam(':br', $student['branch']);
+    $query->bindParam(':str', $student['stream']);
+    $query->bindParam(':sem', $semester);
+    $query->execute();
+    return $query->fetchAll(PDO::FETCH_ASSOC);
+}
+
+function insert_student_marks($reg, $semester, $yr, $spi, $cpi)
+{
+    $db = new PDO('mysql:host=localhost;dbname=dean', 'root', '');
+    $query = $db->prepare('INSERT INTO semester_marks (student_registration_number, semester, d_year, spi, cpi)
+                            VALUES (:reg, :sem, :yr, :spi, :cpi)');
+    $query->bindParam(':reg', $reg);
+    $query->bindParam(':sem', $semester);
+    $query->bindParam(':yr', $yr);
+    $query->bindParam(':spi', $spi);
+    $query->bindParam(':cpi', $cpi);
+    $query->execute();
+}
+
+function toggle_grade_entry(bool $val)
 {
     $db = new PDO('mysql:host=localhost;dbname=dean', 'root', '');
     $query = $db->prepare('UPDATE admin SET grade_entry = :v');
     $query->bindParam(':v', $val);
     $query->execute();
+
+    if ($val) {
+        return;
+    }
+
+    $semester = get_semester();
+    $query = $db->prepare('SELECT * FROM student WHERE semester = :sem');
+    $query->bindParam(':sem', $semester);
+    $query->execute();
+    $students = $query->fetchAll(PDO::FETCH_ASSOC);
+
+    foreach ($students as $std) {
+        $marks = get_prev_student_marks($std);
+        $cpi = 0;
+        foreach ($marks as $mark) {
+            $cpi += $mark['spi'];
+        }
+        $transcript = get_student_details($std, $semester);
+        $spi = 0;
+        $yr = '';
+        if ($transcript != null) {
+            $total_marks = 0;
+            $total_credits = 0;
+            foreach ($transcript as $course) {
+                $total_marks += (intval($course['points']) * intval($course['credits']));
+                $total_credits += intval($course['credits']);
+                $yr = $course['d_year'];
+            }
+            $spi = $total_marks / $total_credits;
+            $cpi += $spi;
+        }
+        $cpi /= intval($semester);
+        insert_student_marks($std['registration_number'], $semester, $yr, $spi, $cpi);
+    }
 }
 
 function toggle_course_entry($val)

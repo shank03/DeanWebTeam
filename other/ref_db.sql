@@ -57,6 +57,16 @@ CREATE TABLE marks (
     FOREIGN KEY (student_registration_number) REFERENCES student(registration_number)
 );
 
+CREATE TABLE semester_marks(
+    student_registration_number VARCHAR(255) NOT NULL,
+    semester INT NOT NULL,
+    d_year INT NOT NULL,
+    spi FLOAT NOT NULL DEFAULT 0,
+    cpi FLOAT NOT NULL DEFAULT 0,
+    PRIMARY KEY (student_registration_number,semester,d_year),
+    FOREIGN KEY (student_registration_number) REFERENCES student(registration_number)
+);
+
 CREATE TABLE professor_allotment (
     employee_id INT NOT NULL,
     course_code VARCHAR(255) NOT NULL,
@@ -72,7 +82,9 @@ CREATE TABLE admin (
     employee_id INT NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
     course_entry boolean NOT NULL DEFAULT FALSE,
+    course_entered boolean NOT NULL DEFAULT FALSE,
     grade_entry boolean NOT NULL DEFAULT FALSE,
+    grade_entered boolean NOT NULL DEFAULT FALSE,
     semester INT NOT NULL,
     FOREIGN KEY (employee_id) REFERENCES professor(employee_id)
 );
@@ -138,5 +150,5 @@ VALUES (1116, 'Dr. Dushyant', 'Kumar Singh', '1234567890', 'dushyant@mnnit.ac.in
 (1117, 'Dr. Shashwati', 'Banerjea', '1234567890', 'shashwati@mnnit.ac.in', '$2y$12$NQjkpTMrmkCcOynIgiHiG.VRmzIMCEMxKsFLuvEkRYYequD2V4GNu', '2010-01-01'),
 (1118, 'Dr. Srasij', 'Tripathi', '1234567890', 'sarsij@mnnit.ac.in', '$2y$12$NQjkpTMrmkCcOynIgiHiG.VRmzIMCEMxKsFLuvEkRYYequD2V4GNu', '2010-01-01');
 
-INSERT INTO admin (employee_id, password_hash, course_entry, grade_entry, semester)
+INSERT INTO admin (employee_id, password_hash, course_entry, course_entered, grade_entry, grade_entered, semester)
 VALUES (1116, '$2y$12$NQjkpTMrmkCcOynIgiHiG.VRmzIMCEMxKsFLuvEkRYYequD2V4GNu', 0, 0, 5);
