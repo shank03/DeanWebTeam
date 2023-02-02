@@ -96,6 +96,33 @@ function get_transcript($student, $sem)
     return $query->fetchAll(PDO::FETCH_ASSOC);
 }
 
+function get_spi_cpi_sem($student, $sem)
+{
+    $db = new PDO('mysql:host=localhost;dbname=dean', 'root', '');
+    $query = $db->prepare('SELECT * FROM semester_marks WHERE student_registration_number = :reg AND semester = :sem');
+    $query->bindParam(':reg', $student['registration_number']);
+    $query->bindParam(':sem', $sem);
+    $query->execute();
+
+    if ($query->rowCount() <= 0) {
+        return null;
+    }
+    return $query->fetch(PDO::FETCH_ASSOC);
+}
+
+function get_spi_cpi($student)
+{
+    $db = new PDO('mysql:host=localhost;dbname=dean', 'root', '');
+    $query = $db->prepare('SELECT * FROM semester_marks WHERE student_registration_number = :reg');
+    $query->bindParam(':reg', $student['registration_number']);
+    $query->execute();
+
+    if ($query->rowCount() <= 0) {
+        return null;
+    }
+    return $query->fetchAll(PDO::FETCH_ASSOC);
+}
+
 function get_grade($course)
 {
     $points = [
@@ -126,26 +153,10 @@ function get_entry_status()
 
 function get_result($student)
 {
-    $cpi = 0;
-    $entry_stat = get_entry_status();
-
-    if ($entry_stat[0] || $entry_stat[1]) {
+    $result = get_spi_cpi_sem($student, $student['semester']);
+    if ($result == null) {
         echo "<p>Result not available</p>";
         return;
-    }
-
-    for ($i = 1; $i <= intval($student['semester']); ++$i) {
-        $transcript = get_transcript($student, $i);
-        if ($transcript != null) {
-            $total_marks = 0;
-            $total_credits = 0;
-            foreach ($transcript as $course) {
-                $total_marks += (intval($course['points']) * intval($course['credits']));
-                $total_credits += intval($course['credits']);
-            }
-            $spi = $total_marks / $total_credits;
-            $cpi += $spi;
-        }
     }
 
     $transcript = get_transcript($student, $student['semester']);
@@ -157,8 +168,6 @@ function get_result($student)
                 <th>Credits</th>
                 <th>Grade</th>
             </tr>";
-        $total_marks = 0;
-        $total_credits = 0;
         foreach ($transcript as $course) {
             $grade = get_grade($course);
             echo "<tr>
@@ -167,37 +176,31 @@ function get_result($student)
                 <td>" . $course['credits'] . "</td>
                 <td>" . $grade . "</td>
                 </tr>";
-            $total_marks += (intval($course['points']) * intval($course['credits']));
-            $total_credits += intval($course['credits']);
         }
-        $spi = $total_marks / $total_credits;
         echo "<tr>
                 <td>" . "</td>
                 <td>" . "</td>
                 <td>SPI</td>
-                <td>" . number_format((float)($spi), 2, '.', '') . "</td>
+                <td>" . number_format((float)($result['spi']), 2, '.', '') . "</td>
                 </tr>";
         echo "</table>";
     } else {
         echo "<p>Result not available for current semester</p>";
     }
-    echo "<h3>CPI : " . number_format((float)($cpi / intval($student['semester'])), 2, '.', '') . "</h3>";
+    echo "<h3>CPI : " . number_format((float)($result['cpi']), 2, '.', '') . "</h3>";
 }
 
 function get_ui_transcript($student)
 {
     $cpi = 0;
-    $entry_stat = get_entry_status();
-
     $last_sem = intval($student['semester']);
-    if ($entry_stat[0] || $entry_stat[1]) {
-        $last_sem -= 1;
-    }
 
     for ($i = 1; $i <= $last_sem; ++$i) {
         echo "<h3>Semester : " . $i . "</h3>";
+
         $transcript = get_transcript($student, $i);
-        if ($transcript != null) {
+        $result = get_spi_cpi_sem($student, $i);
+        if ($transcript != null && $result != null) {
             echo "<table>
             <tr>
                 <th>Course Code</th>
@@ -205,8 +208,6 @@ function get_ui_transcript($student)
                 <th>Credits</th>
                 <th>Grade</th>
             </tr>";
-            $total_marks = 0;
-            $total_credits = 0;
             foreach ($transcript as $course) {
                 $grade = get_grade($course);
                 echo "<tr>
@@ -215,51 +216,33 @@ function get_ui_transcript($student)
                 <td>" . $course['credits'] . "</td>
                 <td>" . $grade . "</td>
                 </tr>";
-                $total_marks += (intval($course['points']) * intval($course['credits']));
-                $total_credits += intval($course['credits']);
             }
-            $spi = $total_marks / $total_credits;
             echo "<tr>
                 <td>" . "</td>
                 <td>" . "</td>
                 <td>SPI</td>
-                <td>" . number_format((float)($spi), 2, '.', '') . "</td>
+                <td>" . number_format((float)($result['spi']), 2, '.', '') . "</td>
                 </tr>";
             echo "</table>";
-
-            $cpi += $spi;
+            $cpi = $result['cpi'];
         } else {
             echo "<p>Transcript not available for semester : " . $i . "</p>";
         }
         echo "<hr class='dotted'>";
     }
-    echo "<h3>CPI : " . number_format((float)($cpi / intval($student['semester'])), 2, '.', '') . "</h3>";
+    echo "<h3>CPI : " . number_format((float)($cpi), 2, '.', '') . "</h3>";
 }
 
 function get_prev_sem_pref($student)
 {
-    $cpi = 0;
-    $entry_stat = get_entry_status();
-
     $last_sem = intval($student['semester']);
-    if ($entry_stat[0] || $entry_stat[1]) {
-        $last_sem -= 1;
-    }
-
     for ($i = 1; $i <= $last_sem; ++$i) {
         echo "<h3>Semester : " . $i . "</h3>";
         $transcript = get_transcript($student, $i);
-        if ($transcript != null) {
-            $total_marks = 0;
-            $total_credits = 0;
-            foreach ($transcript as $course) {
-                $total_marks += (intval($course['points']) * intval($course['credits']));
-                $total_credits += intval($course['credits']);
-            }
-            $spi = $total_marks / $total_credits;
-            $cpi += $spi;
-            echo "<h4>SPI : " . number_format((float)($spi), 2, '.', '') .
-                "&nbsp&nbsp&nbsp&nbspCPI : " . number_format((float)($cpi / $i), 2, '.', '') . "</h4>";
+        $result = get_spi_cpi_sem($student, $i);
+        if ($transcript != null && $result != null) {
+            echo "<h4>SPI : " . number_format((float)($result['spi']), 2, '.', '') .
+                "&nbsp&nbsp&nbsp&nbspCPI : " . number_format((float)($result['cpi']), 2, '.', '') . "</h4>";
         } else {
             echo "<p>SPI not available for semester : " . $i . "</p>";
         }

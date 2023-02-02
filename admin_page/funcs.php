@@ -109,6 +109,10 @@ function toggle_grade_entry(bool $val)
     $query->execute();
     $students = $query->fetchAll(PDO::FETCH_ASSOC);
 
+    if ($val) {
+        return;
+    }
+
     foreach ($students as $std) {
         $marks = get_prev_student_marks($std);
         $cpi = 0;
