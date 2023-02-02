@@ -1,5 +1,7 @@
 # This file contains the schemas to refer for queries
 
+# password -> '$2y$12$NQjkpTMrmkCcOynIgiHiG.VRmzIMCEMxKsFLuvEkRYYequD2V4GNu' -> '1234567'
+
 CREATE TABLE professor (
     employee_id INT PRIMARY KEY,
     first_name VARCHAR(255) NOT NULL,
@@ -91,8 +93,6 @@ CREATE TABLE admin (
 
 # Queries
 
-# password -> '$2y$12$NQjkpTMrmkCcOynIgiHiG.VRmzIMCEMxKsFLuvEkRYYequD2V4GNu' -> '1234567'
-
 # Change entry status
 UPDATE admin SET course_entry = true, grade_entry = true;
 
@@ -151,4 +151,4 @@ VALUES (1116, 'Dr. Dushyant', 'Kumar Singh', '1234567890', 'dushyant@mnnit.ac.in
 (1118, 'Dr. Srasij', 'Tripathi', '1234567890', 'sarsij@mnnit.ac.in', '$2y$12$NQjkpTMrmkCcOynIgiHiG.VRmzIMCEMxKsFLuvEkRYYequD2V4GNu', '2010-01-01');
 
 INSERT INTO admin (employee_id, password_hash, course_entry, course_entered, grade_entry, grade_entered, semester)
-VALUES (1116, '$2y$12$NQjkpTMrmkCcOynIgiHiG.VRmzIMCEMxKsFLuvEkRYYequD2V4GNu', 0, 0, 5);
+VALUES (1116, '$2y$12$NQjkpTMrmkCcOynIgiHiG.VRmzIMCEMxKsFLuvEkRYYequD2V4GNu', 0, 0, 0, 0, 5);
