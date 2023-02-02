@@ -97,8 +97,10 @@ function insert_student_marks($reg, $semester, $yr, $spi, $cpi)
 function toggle_grade_entry(bool $val)
 {
     $db = new PDO('mysql:host=localhost;dbname=dean', 'root', '');
-    $query = $db->prepare('UPDATE admin SET grade_entry = :v');
+    $query = $db->prepare('UPDATE admin SET admin.grade_entry = :v, admin.grade_entered = :ve');
     $query->bindParam(':v', $val);
+    $ve = !$val;
+    $query->bindParam(':ve', $ve);
     $query->execute();
 
     if ($val) {
@@ -139,8 +141,10 @@ function toggle_grade_entry(bool $val)
 function toggle_course_entry($val)
 {
     $db = new PDO('mysql:host=localhost;dbname=dean', 'root', '');
-    $query = $db->prepare('UPDATE admin SET course_entry = :v');
+    $query = $db->prepare('UPDATE admin SET admin.course_entry = :v, admin.course_entered = :ve');
     $query->bindParam(':v', $val);
+    $ve = !$val;
+    $query->bindParam(':ve', $ve);
     $query->execute();
 }
 

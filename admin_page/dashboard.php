@@ -142,14 +142,23 @@
 <body>
     <?php
     $detail = get_admin_detail();
-    $entry_stat = get_entry_status();
+    $entry_stat = [intval($detail['course_entry']), intval($detail['grade_entry'])];
 
     if (isset($_POST['admin_grade_entry'])) {
+        if (!$entry_stat[1] && intval($detail['grade_entered'])) {
+            echo "<script>alert(\"Grade entry closed for this semester.\"); window.location.href='admin'</script>";
+            return;
+        }
         toggle_grade_entry(!$entry_stat[1]);
         header('Location: admin');
         exit;
     }
     if (isset($_POST['admin_course_entry'])) {
+        if (!$entry_stat[0] && intval($detail['course_entered'])) {
+            echo "<script>alert(\"Course entry closed for this semester.\"); window.location.href='admin'</script>";
+            return;
+        }
+
         toggle_course_entry(!$entry_stat[0]);
         header('Location: admin');
         exit;
