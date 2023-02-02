@@ -26,7 +26,7 @@ function logout_admin()
 function get_admin_detail()
 {
     $db = new PDO('mysql:host=localhost;dbname=dean', 'root', '');
-    $query = $db->prepare('SELECT * FROM admin LIMIT 1');
+    $query = $db->prepare('SELECT * FROM admin');
     $query->execute();
 
     if ($query->rowCount() <= 0) {
@@ -103,10 +103,6 @@ function toggle_grade_entry(bool $val)
     $query->bindParam(':ve', $ve);
     $query->execute();
 
-    if ($val) {
-        return;
-    }
-
     $semester = get_semester();
     $query = $db->prepare('SELECT * FROM student WHERE semester = :sem');
     $query->bindParam(':sem', $semester);
@@ -148,7 +144,16 @@ function toggle_course_entry($val)
     $query->execute();
 }
 
-function change_semester()
+function change_semester($semester)
 {
-    // TODO: Change semester
+    $sem = $semester + 1;
+    $db = new PDO('mysql:host=localhost;dbname=dean', 'root', '');
+    $query = $db->prepare('UPDATE admin SET admin.semester = :sem');
+    $query->bindParam(':sem', $sem);
+    $query->execute();
+
+    $query = $db->prepare('UPDATE student SET student.semester = :sem WHERE student.semester = :ssem');
+    $query->bindParam(':sem', $sem);
+    $query->bindParam(':ssem', $semester);
+    $query->execute();
 }

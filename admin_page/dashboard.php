@@ -164,7 +164,7 @@
         exit;
     }
     if (isset($_POST['admin_change_sem'])) {
-        change_semester();
+        change_semester($detail['semester']);
         header('Location: admin');
         exit;
     }
